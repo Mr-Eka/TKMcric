@@ -1,0 +1,28 @@
+{% extends 'teams/base.html' %}
+{% block title %}{{ player.name }} - Career Stats{% endblock %}
+{% block content %}
+    <h1>{{ player.name }} ({{ player.team.short_name }})</h1>
+    <p>Role: {{ player.get_role_display }}</p>
+
+    <h2>🏏 Batting Career</h2>
+    <ul>
+        <li>Innings Batted: {{ innings_batted }}</li>
+        <li>Total Runs: {{ total_runs }}</li>
+        <li>Balls Faced: {{ total_balls_faced }}</li>
+        <li>Fours: {{ total_fours }} | Sixes: {{ total_sixes }}</li>
+        <li>Times Out: {{ times_out }}</li>
+        <li>Batting Average: {{ career_average }}</li>
+        <li>Strike Rate: {{ career_strike_rate }}</li>
+    </ul>
+
+    <h2>🎯 Bowling Career</h2>
+    <ul>
+        <li>Innings Bowled: {{ innings_bowled }}</li>
+        <li>Overs Bowled: {{ overs_bowled_display }}</li>
+        <li>Runs Conceded: {{ total_runs_conceded }}</li>
+        <li>Wickets Taken: {{ total_wickets }}</li>
+        <li>Economy Rate: {{ career_economy }}</li>
+    </ul>
+
+    <a href="{% url 'team_detail' player.team.pk %}">Back to Team</a>
+{% endblock %}

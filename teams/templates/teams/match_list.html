@@ -1,0 +1,18 @@
+{% extends 'teams/base.html' %}
+{% block title %}Matches - TKMcric{% endblock %}
+{% block content %}
+    <h1>All Matches</h1>
+    <a href="{% url 'match_create' %}">+ Schedule Match</a>
+    <ul>
+        {% for match in matches %}
+            <li>
+                <a href="{% url 'match_detail' match.pk %}">
+                    {{ match.team_a.short_name }} vs {{ match.team_b.short_name }} — {{ match.get_status_display }}
+                    ({{ match.match_date|date:"d M Y, h:i A" }})
+                </a>
+            </li>
+        {% empty %}
+            <li>No matches scheduled yet.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

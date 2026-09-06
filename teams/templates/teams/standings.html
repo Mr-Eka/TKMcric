@@ -1,0 +1,33 @@
+{% extends 'teams/base.html' %}
+{% block title %}Standings - TKMcric{% endblock %}
+{% block content %}
+    <h1>🏆 League Standings</h1>
+
+    <table style="width:100%; border-collapse: collapse; background: rgba(255,255,255,0.95); border-radius: 12px; overflow: hidden;">
+        <thead>
+            <tr style="background: #1e293b; color: white;">
+                <th style="padding: 0.8rem; text-align:left;">Team</th>
+                <th style="padding: 0.8rem;">P</th>
+                <th style="padding: 0.8rem;">W</th>
+                <th style="padding: 0.8rem;">L</th>
+                <th style="padding: 0.8rem;">T</th>
+                <th style="padding: 0.8rem;">Pts</th>
+                <th style="padding: 0.8rem;">NRR</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in table %}
+                <tr style="border-bottom: 1px solid #e5e7eb; color: #1a1a1a;">
+                    <td style="padding: 0.7rem;">{{ row.team.short_name }}</td>
+                    <td style="text-align:center;">{{ row.played }}</td>
+                    <td style="text-align:center;">{{ row.won }}</td>
+                    <td style="text-align:center;">{{ row.lost }}</td>
+                    <td style="text-align:center;">{{ row.tied }}</td>
+                    <td style="text-align:center; font-weight:700;">{{ row.points }}</td>
+                    <td style="text-align:center;">{{ row.nrr }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

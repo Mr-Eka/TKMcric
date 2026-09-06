@@ -1,0 +1,11 @@
+{% extends 'teams/base.html' %}
+{% block title %}Schedule Match - TKMcric{% endblock %}
+{% block content %}
+    <h1>Schedule a New Match</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Create Match</button>
+    </form>
+    <a href="{% url 'match_list' %}">Cancel</a>
+{% endblock %}

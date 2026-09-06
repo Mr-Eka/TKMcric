@@ -1,0 +1,20 @@
+{% extends 'teams/base.html' %}
+{% block title %}{{ match.team_a.short_name }} vs {{ match.team_b.short_name }} - Live Score{% endblock %}
+{% block content %}
+<div class="scoreboard-wrapper">
+    <h1>{{ match.team_a.name }} vs {{ match.team_b.name }}</h1>
+    <p class="match-status status-{{ match.status }}">{{ match.get_status_display }}</p>
+    {% for innings in innings_list %}
+        <div class="innings-card">
+            <h2>{{ innings.batting_team.short_name }}</h2>
+            <div class="score-display">
+                {{ innings.total_runs }}/{{ innings.total_wickets }}
+                <span class="overs">({{ innings.overs_bowled }} / {{ match.overs_limit }} overs)</span>
+            </div>
+        </div>
+    {% empty %}
+        <p>Innings not started yet.</p>
+    {% endfor %}
+    <a href="{% url 'match_detail' match.pk %}" class="back-link">Match Details</a>
+</div>
+{% endblock %}

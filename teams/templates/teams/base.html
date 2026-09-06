@@ -1,0 +1,24 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}TKMcric{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav>
+        <a href="{% url 'team_list' %}" class="brand">🏏 TKMcric</a>
+        <a href="{% url 'team_list' %}">Teams</a>
+        <a href="{% url 'match_list' %}">Matches</a>
+        <a href="{% url 'match_history' %}">History</a>
+        <a href="{% url 'standings' %}">Standings</a>
+    </nav>
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

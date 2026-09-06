@@ -1,0 +1,11 @@
+{% extends 'teams/base.html' %}
+{% block title %}Start Innings - TKMcric{% endblock %}
+{% block content %}
+    <h1>Start Innings for {{ match }}</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Start Scoring</button>
+    </form>
+    <a href="{% url 'match_detail' match.pk %}">Cancel</a>
+{% endblock %}

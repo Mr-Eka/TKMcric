@@ -1,0 +1,20 @@
+{% extends 'teams/base.html' %}
+{% block title %}{{ team.name }} - TKMcric{% endblock %}
+{% block content %}
+    <h1>{{ team.name }} ({{ team.short_name }})</h1>
+    {% if team.logo %}
+        <img src="{{ team.logo.url }}" alt="{{ team.name }} logo" width="120">
+    {% endif %}
+    <h2>Players</h2>
+    <a href="{% url 'player_create' team.pk %}">+ Add Player</a>
+    <ul>
+        {% for player in players %}
+            <li>
+                <a href="{% url 'player_career' player.pk %}">{{ player.name }}</a> — {{ player.get_role_display }} {% if player.jersey_number %}(#{{ player.jersey_number }}){% endif %}
+            </li>
+        {% empty %}
+            <li>No players added yet.</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'team_list' %}">Back to Teams</a>
+{% endblock %}

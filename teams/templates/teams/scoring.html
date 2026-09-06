@@ -1,0 +1,113 @@
+{% extends 'teams/base.html' %}
+{% block title %}Live Scoring - TKMcric{% endblock %}
+{% block content %}
+<div class="scoring-wrapper">
+    <div class="score-header">
+        <h1>{{ innings.batting_team.short_name }} <span class="vs">vs</span> {{ innings.bowling_team.short_name }}</h1>
+        <div class="big-score">{{ total_runs }}<span class="slash">/</span>{{ total_wickets }}</div>
+        <div class="overs-line">{{ overs_bowled }} overs</div>
+    </div>
+
+    {% if innings.match.status == 'completed' %}
+        <div class="innings-card" style="margin-bottom:1.5rem; border: 2px solid #10b981;">
+            <h2>🏆 Match Result</h2>
+            <p style="color:#fff; font-size:1.1rem;">{{ innings.match.result_summary }}</p>
+        </div>
+    {% endif %}
+
+    <form method="POST" class="scoring-form">
+        {% csrf_token %}
+        <div class="field-group">
+            <label>Batsman on Strike</label>
+            {{ form.batsman }}
+        </div>
+        <div class="field-group">
+            <label>Bowler</label>
+            {{ form.bowler }}
+        </div>
+        <div class="field-group">
+            <label>Runs</label>
+            <div class="run-buttons">
+                <button type="button" class="run-btn" data-value="0">0</button>
+                <button type="button" class="run-btn" data-value="1">1</button>
+                <button type="button" class="run-btn" data-value="2">2</button>
+                <button type="button" class="run-btn" data-value="3">3</button>
+                <button type="button" class="run-btn run-4" data-value="4">4</button>
+                <button type="button" class="run-btn run-6" data-value="6">6</button>
+            </div>
+            {{ form.runs }}
+        </div>
+        <div class="field-group">
+            <label>Extra</label>
+            {{ form.extra_type }}
+        </div>
+        <div class="field-group">
+            <label>Extra Runs</label>
+            {{ form.extra_runs }}
+        </div>
+        <div class="field-group checkbox-group">
+            <label>{{ form.is_wicket }} Wicket?</label>
+        </div>
+        <div class="field-group">
+            <label>Wicket Type</label>
+            {{ form.wicket_type }}
+        </div>
+        <div class="field-group">
+            <label>Player Out</label>
+            {{ form.player_out }}
+        </div>
+        <div class="field-group">
+            <label>Next Batsman (if wicket)</label>
+            {{ form.next_batsman }}
+        </div>
+        <button type="submit" class="submit-ball-btn">Submit Ball</button>
+    </form>
+
+    <h3 class="recent-title">Recent Balls</h3>
+    <div class="ball-feed">
+        {% for ball in balls %}
+            <div class="ball-item {% if ball.is_wicket %}wicket-ball{% endif %}">
+                <span class="ball-over">{{ ball.over_number }}.{{ ball.ball_number }}</span>
+                <span class="ball-info">
+                    {{ ball.batsman.name }} — {{ ball.total_runs }} run(s)
+                    {% if ball.extra_type %}({{ ball.get_extra_type_display }}){% endif %}
+                    {% if ball.is_wicket %}<strong>OUT ({{ ball.get_wicket_type_display }})</strong>{% endif %}
+                </span>
+            </div>
+        {% endfor %}
+    </div>
+
+    <h3 class="recent-title">Batting Stats</h3>
+    <div class="ball-feed">
+        {% for s in batting_stats %}
+            <div class="ball-item">
+                <span class="ball-info">
+                    {{ s.player.name }} — {{ s.runs }} ({{ s.balls }}b) SR: {{ s.strike_rate }}
+                    {% if s.out %}<strong>OUT</strong>{% else %}*{% endif %}
+                </span>
+            </div>
+        {% endfor %}
+    </div>
+
+    <h3 class="recent-title">Bowling Stats</h3>
+    <div class="ball-feed">
+        {% for s in bowling_stats %}
+            <div class="ball-item">
+                <span class="ball-info">
+                    {{ s.player.name }} — {{ s.overs_display }} overs, {{ s.runs }} runs, {{ s.wickets }} wkt(s), Econ: {{ s.economy }}
+                </span>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('.run-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.getElementById('id_runs').value = btn.dataset.value;
+        document.querySelectorAll('.run-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    });
+});
+</script>
+{% endblock %}

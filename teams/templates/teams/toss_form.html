@@ -1,0 +1,11 @@
+{% extends 'teams/base.html' %}
+{% block title %}Toss - TKMcric{% endblock %}
+{% block content %}
+    <h1>Toss — {{ match.team_a.short_name }} vs {{ match.team_b.short_name }}</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Toss</button>
+    </form>
+    <a href="{% url 'match_detail' match.pk %}">Cancel</a>
+{% endblock %}

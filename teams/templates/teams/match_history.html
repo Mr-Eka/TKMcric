@@ -1,0 +1,21 @@
+{% extends 'teams/base.html' %}
+{% block title %}Match History - TKMcric{% endblock %}
+{% block content %}
+    <h1>Match History</h1>
+
+    <ul>
+        {% for match in matches %}
+            <li>
+                <a href="{% url 'match_detail' match.pk %}">
+                    <strong>{{ match.team_a.short_name }} vs {{ match.team_b.short_name }}</strong>
+                    <br>
+                    {{ match.match_date|date:"d M Y" }} — 🏆 {{ match.result_summary }}
+                </a>
+            </li>
+        {% empty %}
+            <li>No completed matches yet.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'match_list' %}">Back to All Matches</a>
+{% endblock %}
