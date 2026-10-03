@@ -11,7 +11,7 @@ class TeamForm(forms.ModelForm):
 class PlayerForm(forms.ModelForm):
     class Meta:
         model = Player
-        fields = ['name', 'role', 'jersey_number']
+        fields = ['name', 'role', 'jersey_number', 'profile_picture']
 
 
 class MatchForm(forms.ModelForm):

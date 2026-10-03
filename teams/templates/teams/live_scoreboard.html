@@ -4,17 +4,39 @@
 <div class="scoreboard-wrapper">
     <h1>{{ match.team_a.name }} vs {{ match.team_b.name }}</h1>
     <p class="match-status status-{{ match.status }}">{{ match.get_status_display }}</p>
-    {% for innings in innings_list %}
+
+    {% if current_innings %}
         <div class="innings-card">
-            <h2>{{ innings.batting_team.short_name }}</h2>
+            <h2>{{ current_innings.batting_team.short_name }}</h2>
             <div class="score-display">
-                {{ innings.total_runs }}/{{ innings.total_wickets }}
-                <span class="overs">({{ innings.overs_bowled }} / {{ match.overs_limit }} overs)</span>
+                {{ current_innings.total_runs }}/{{ current_innings.total_wickets }}
+                <span class="overs">({{ current_innings.overs_bowled }} / {{ match.overs_limit }} overs)</span>
             </div>
         </div>
-    {% empty %}
+    {% else %}
         <p>Innings not started yet.</p>
-    {% endfor %}
+    {% endif %}
+
+    {% if target_info %}
+        <div class="innings-card">
+            <h2>🎯 Target</h2>
+            <div class="score-display" style="font-size:1.8rem;">{{ target_info.runs_needed }} off {{ target_info.overs_remaining }} overs</div>
+            <span class="overs">Required Run Rate: {{ target_info.rrr }}</span>
+        </div>
+    {% endif %}
+
+    {% if recent_balls %}
+        <h2 style="text-align:left; margin-top:1.5rem;">📢 Commentary</h2>
+        <div class="ball-feed" style="text-align:left;">
+            {% for ball in recent_balls %}
+                <div class="ball-item {% if ball.is_wicket %}wicket-ball{% endif %}">
+                    <span class="ball-over">{{ ball.over_number }}.{{ ball.ball_number }}</span>
+                    <span class="ball-info">{{ ball.commentary }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
     <a href="{% url 'match_detail' match.pk %}" class="back-link">Match Details</a>
 </div>
 {% endblock %}

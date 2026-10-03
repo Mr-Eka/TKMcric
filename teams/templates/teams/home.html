@@ -1,0 +1,77 @@
+{% extends 'teams/base.html' %}
+{% block title %}TKMcric - Home{% endblock %}
+{% block content %}
+<div id="splash-screen">
+    <div class="splash-content">
+        <div class="splash-ball">🏏</div>
+        <h1 class="splash-title">TKMcric</h1>
+        <p class="splash-tagline">Score your own cricket matches, live.</p>
+        <div class="splash-bar">
+            <div class="splash-bar-fill"></div>
+        </div>
+    </div>
+</div>
+
+<div id="main-content" class="main-content-hidden">
+    <div style="text-align:center; margin-bottom:2rem;">
+        <h1 style="font-size:2.8rem;">🏏 Welcome to TKMcric</h1>
+        <p style="font-size:1.1rem;">Score your own cricket matches, live.</p>
+    </div>
+
+    <div class="stats-grid" style="margin-bottom:2rem;">
+        <div class="stat-tile">
+            <span class="stat-value">{{ total_teams }}</span>
+            <span class="stat-label">Teams</span>
+        </div>
+        <div class="stat-tile">
+            <span class="stat-value">{{ total_matches }}</span>
+            <span class="stat-label">Matches</span>
+        </div>
+        <div class="stat-tile">
+            <span class="stat-value">{{ live_matches.count }}</span>
+            <span class="stat-label">Live Now</span>
+        </div>
+    </div>
+
+    {% if live_matches %}
+        <h2>🔴 Live Matches</h2>
+        <ul>
+            {% for match in live_matches %}
+                <li>
+                    <a href="{% url 'live_scoreboard' match.pk %}">
+                        {{ match.team_a.short_name }} vs {{ match.team_b.short_name }} — Live now
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if upcoming_matches %}
+        <h2>📅 Upcoming Matches</h2>
+        <ul>
+            {% for match in upcoming_matches %}
+                <li>
+                    <a href="{% url 'match_detail' match.pk %}">
+                        {{ match.team_a.short_name }} vs {{ match.team_b.short_name }} — {{ match.match_date|date:"d M Y, h:i A" }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+
+<script>
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            const splash = document.getElementById('splash-screen');
+            const main = document.getElementById('main-content');
+            splash.classList.add('splash-fade-out');
+            main.classList.remove('main-content-hidden');
+            main.classList.add('main-content-visible');
+            setTimeout(function() {
+                splash.style.display = 'none';
+            }, 600);
+        }, 1800);
+    });
+</script>
+{% endblock %}

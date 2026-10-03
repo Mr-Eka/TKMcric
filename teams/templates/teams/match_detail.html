@@ -3,31 +3,41 @@
 {% block content %}
     <h1>{{ match.team_a.name }} vs {{ match.team_b.name }}</h1>
     <a href="{% url 'live_scoreboard' match.pk %}">📺 View Live Scoreboard</a>
+    <a href="{% url 'match_qr_code' match.pk %}">📤 Share Match</a>
     <p>Status: {{ match.get_status_display }}</p>
     <p>Date: {{ match.match_date|date:"d M Y, h:i A" }}</p>
     <p>Overs: {{ match.overs_limit }}</p>
 
     {% if match.toss_winner %}
         <p>🪙 Toss: {{ match.toss_winner.short_name }} won and chose to {{ match.get_toss_decision_display }}</p>
-    {% else %}
+    {% elif is_owner %}
         <a href="{% url 'toss_update' match.pk %}">🪙 Set Toss Result</a>
     {% endif %}
 
     {% if match.status == 'completed' %}
         <p>🏆 {{ match.result_summary }}</p>
+        {% if motm %}
+        <p>⭐ Man of the Match: <strong>{{ motm.name }}</strong> ({{ motm.team.short_name }})</p>
+        {% endif %}
     {% endif %}
 
     <h2>Innings</h2>
     <ul>
         {% for innings in innings_list %}
             <li>
-                <a href="{% url 'scoring' innings.pk %}">
+                {% if is_owner %}
+                    <a href="{% url 'scoring' innings.pk %}">
+                        {{ innings.batting_team.short_name }}: {{ innings.total_runs }}/{{ innings.total_wickets }} ({{ innings.overs_bowled }} overs)
+                    </a>
+                {% else %}
                     {{ innings.batting_team.short_name }}: {{ innings.total_runs }}/{{ innings.total_wickets }} ({{ innings.overs_bowled }} overs)
-                </a>
+                {% endif %}
             </li>
         {% endfor %}
     </ul>
 
-    <a href="{% url 'innings_create' match.pk %}">+ Start New Innings</a>
+    {% if is_owner %}
+        <a href="{% url 'innings_create' match.pk %}">+ Start New Innings</a>
+    {% endif %}
     <a href="{% url 'match_list' %}">Back to Matches</a>
 {% endblock %}

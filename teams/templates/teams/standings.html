@@ -1,33 +1,58 @@
 {% extends 'teams/base.html' %}
-{% block title %}Standings - TKMcric{% endblock %}
+{% block title %}Points Table - TKMcric{% endblock %}
 {% block content %}
-    <h1>🏆 League Standings</h1>
+<div class="icc-wrapper">
+    <div class="icc-header">
+        <div class="icc-badge">🏏</div>
+        <div class="icc-header-divider"></div>
+        <div class="icc-title-block">
+            <h1 class="icc-title">POINTS<br>TABLE</h1>
+            <p class="icc-subtitle">TKMcric League</p>
+        </div>
+    </div>
 
-    <table style="width:100%; border-collapse: collapse; background: rgba(255,255,255,0.95); border-radius: 12px; overflow: hidden;">
-        <thead>
-            <tr style="background: #1e293b; color: white;">
-                <th style="padding: 0.8rem; text-align:left;">Team</th>
-                <th style="padding: 0.8rem;">P</th>
-                <th style="padding: 0.8rem;">W</th>
-                <th style="padding: 0.8rem;">L</th>
-                <th style="padding: 0.8rem;">T</th>
-                <th style="padding: 0.8rem;">Pts</th>
-                <th style="padding: 0.8rem;">NRR</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in table %}
-                <tr style="border-bottom: 1px solid #e5e7eb; color: #1a1a1a;">
-                    <td style="padding: 0.7rem;">{{ row.team.short_name }}</td>
-                    <td style="text-align:center;">{{ row.played }}</td>
-                    <td style="text-align:center;">{{ row.won }}</td>
-                    <td style="text-align:center;">{{ row.lost }}</td>
-                    <td style="text-align:center;">{{ row.tied }}</td>
-                    <td style="text-align:center; font-weight:700;">{{ row.points }}</td>
-                    <td style="text-align:center;">{{ row.nrr }}</td>
+    <div class="icc-table-wrap">
+        <table class="icc-table">
+            <thead>
+                <tr>
+                    <th class="icc-team-col">TEAM</th>
+                    <th>NRR</th>
+                    <th>PTS</th>
+                    <th>M</th>
+                    <th>W</th>
+                    <th>L</th>
+                    <th>T</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for row in table %}
+                    <tr class="icc-row">
+                        <td class="icc-team-col">
+                            <div class="icc-team-cell">
+                                {% if row.team.logo %}
+                                    <img src="{{ row.team.logo.url }}" alt="{{ row.team.short_name }}" class="icc-flag">
+                                {% else %}
+                                    <span class="icc-flag-placeholder">{{ row.team.short_name|slice:":2" }}</span>
+                                {% endif %}
+                                <span class="icc-team-name">{{ row.team.short_name }}</span>
+                            </div>
+                        </td>
+                        <td class="{% if row.nrr > 0 %}icc-pos{% elif row.nrr < 0 %}icc-neg{% endif %}">
+                            {% if row.nrr > 0 %}+{% endif %}{{ row.nrr }}
+                        </td>
+                        <td class="icc-pts-cell">{{ row.points }}</td>
+                        <td>{{ row.played }}</td>
+                        <td>{{ row.won }}</td>
+                        <td>{{ row.lost }}</td>
+                        <td>{{ row.tied }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7" style="text-align:center; padding:2rem;">No teams yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
+    <div class="icc-footer">🏏 TKMcric</div>
+</div>
 {% endblock %}

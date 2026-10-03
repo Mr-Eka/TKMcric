@@ -1,46 +1,47 @@
+import qrcode
+import io
+import base64
+
+from django.urls import reverse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.db import models
 from .models import Team, Player, Match, Innings, Ball
 from .forms import TeamForm, PlayerForm, MatchForm, InningsForm, BallForm, TossForm
 
 
+def home(request):
+    total_teams = Team.objects.count()
+    total_matches = Match.objects.count()
+    live_matches = Match.objects.filter(status='live')
+    upcoming_matches = Match.objects.filter(status='upcoming').order_by('match_date')[:5]
+
+    context = {
+        'total_teams': total_teams,
+        'total_matches': total_matches,
+        'live_matches': live_matches,
+        'upcoming_matches': upcoming_matches,
+    }
+    return render(request, 'teams/home.html', context)
+
+# ---------- PUBLIC VIEWS ----------
+
 def team_list(request):
+    search_query = request.GET.get('q', '')
     teams = Team.objects.all()
-    return render(request, 'teams/team_list.html', {'teams': teams})
 
+    if search_query:
+        teams = teams.filter(name__icontains=search_query) | teams.filter(short_name__icontains=search_query)
 
-def team_create(request):
-    if request.method == 'POST':
-        form = TeamForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('team_list')
-    else:
-        form = TeamForm()
-
-    return render(request, 'teams/team_form.html', {'form': form})
+    return render(request, 'teams/team_list.html', {'teams': teams, 'search_query': search_query})
 
 
 def team_detail(request, pk):
     team = get_object_or_404(Team, pk=pk)
     players = team.players.all()
-    return render(request, 'teams/team_detail.html', {'team': team, 'players': players})
-
-
-def player_create(request, team_pk):
-    team = get_object_or_404(Team, pk=team_pk)
-
-    if request.method == 'POST':
-        form = PlayerForm(request.POST)
-        if form.is_valid():
-            player = form.save(commit=False)
-            player.team = team
-            player.save()
-            return redirect('team_detail', pk=team.pk)
-    else:
-        form = PlayerForm()
-
-    return render(request, 'teams/player_form.html', {'form': form, 'team': team})
+    is_owner = request.user.is_authenticated and team.created_by_id == request.user.id
+    return render(request, 'teams/team_detail.html', {'team': team, 'players': players, 'is_owner': is_owner})
 
 
 def player_career(request, pk):
@@ -87,20 +88,24 @@ def player_career(request, pk):
 
 
 def match_list(request):
+    search_query = request.GET.get('q', '')
+    status_filter = request.GET.get('status', '')
+
     matches = Match.objects.all().order_by('-match_date')
-    return render(request, 'teams/match_list.html', {'matches': matches})
 
+    if search_query:
+        matches = matches.filter(team_a__name__icontains=search_query) | matches.filter(team_b__name__icontains=search_query) | matches.filter(team_a__short_name__icontains=search_query) | matches.filter(team_b__short_name__icontains=search_query)
 
-def match_create(request):
-    if request.method == 'POST':
-        form = MatchForm(request.POST)
-        if form.is_valid():
-            match = form.save()
-            return redirect('match_detail', pk=match.pk)
-    else:
-        form = MatchForm()
+    if status_filter:
+        matches = matches.filter(status=status_filter)
 
-    return render(request, 'teams/match_form.html', {'form': form})
+    context = {
+        'matches': matches.distinct(),
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'status_choices': Match.STATUS_CHOICES,
+    }
+    return render(request, 'teams/match_list.html', context)
 
 
 def match_history(request):
@@ -158,14 +163,154 @@ def standings(request):
     return render(request, 'teams/standings.html', {'table': table})
 
 
+def player_leaderboard(request):
+    players = Player.objects.all()
+    leaderboard = []
+
+    for player in players:
+        balls_faced = Ball.objects.filter(batsman=player)
+        balls_bowled = Ball.objects.filter(bowler=player)
+
+        total_runs = sum(b.runs for b in balls_faced)
+        total_wickets = balls_bowled.filter(is_wicket=True).exclude(wicket_type='runout').count()
+        total_fours = balls_faced.filter(runs=4).count()
+        total_sixes = balls_faced.filter(runs=6).count()
+
+        points = total_runs + (total_fours * 1) + (total_sixes * 2) + (total_wickets * 20)
+
+        if total_runs > 0 or total_wickets > 0:
+            leaderboard.append({
+                'player': player,
+                'runs': total_runs,
+                'wickets': total_wickets,
+                'points': points,
+            })
+
+    leaderboard.sort(key=lambda x: -x['points'])
+
+    return render(request, 'teams/leaderboard.html', {'leaderboard': leaderboard[:20]})
+
 def match_detail(request, pk):
     match = get_object_or_404(Match, pk=pk)
     innings_list = match.innings.all()
-    return render(request, 'teams/match_detail.html', {'match': match, 'innings_list': innings_list})
+    is_owner = request.user.is_authenticated and match.created_by_id == request.user.id
+    motm = match.calculate_man_of_match() if match.status == 'completed' else None
+    return render(request, 'teams/match_detail.html', {'match': match, 'innings_list': innings_list, 'is_owner': is_owner, 'motm': motm})
 
 
+def live_scoreboard(request, pk):
+    match = get_object_or_404(Match, pk=pk)
+    innings_list = match.innings.all().order_by('innings_number')
+    recent_balls = Ball.objects.filter(innings__match=match).order_by('-timestamp')[:5]
+
+    current_innings = innings_list.last()
+    target_info = current_innings.target_info() if current_innings else None
+
+    context = {
+        'match': match,
+        'current_innings': current_innings,
+        'recent_balls': recent_balls,
+        'target_info': target_info,
+    }
+    return render(request, 'teams/live_scoreboard.html', context)
+
+def match_qr_code(request, pk):
+    match = get_object_or_404(Match, pk=pk)
+    live_url = request.build_absolute_uri(reverse('live_scoreboard', args=[match.pk]))
+
+    qr = qrcode.QRCode(box_size=8, border=2)
+    qr.add_data(live_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG')
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+
+    context = {
+        'match': match,
+        'qr_base64': qr_base64,
+        'live_url': live_url,
+    }
+    return render(request, 'teams/match_qr.html', context)
+
+# ---------- PRIVATE / WRITE-ACCESS VIEWS (login required) ----------
+
+@login_required
+def team_create(request):
+    if request.method == 'POST':
+        form = TeamForm(request.POST, request.FILES)
+        if form.is_valid():
+            team = form.save(commit=False)
+            team.created_by = request.user
+            team.save()
+            return redirect('team_list')
+    else:
+        form = TeamForm()
+
+    return render(request, 'teams/team_form.html', {'form': form})
+
+
+@login_required
+def player_create(request, team_pk):
+    team = get_object_or_404(Team, pk=team_pk)
+
+    if team.created_by_id != request.user.id:
+        messages.error(request, "Only the team creator can add players.")
+        return redirect('team_detail', pk=team.pk)
+
+    if request.method == 'POST':
+        form = PlayerForm(request.POST, request.FILES)
+        if form.is_valid():
+            player = form.save(commit=False)
+            player.team = team
+            player.save()
+            return redirect('team_detail', pk=team.pk)
+    else:
+        form = PlayerForm()
+
+    return render(request, 'teams/player_form.html', {'form': form, 'team': team})
+
+
+@login_required
+def player_edit(request, pk):
+    player = get_object_or_404(Player, pk=pk)
+
+    if player.team.created_by_id != request.user.id:
+        messages.error(request, "Only the team creator can edit players.")
+        return redirect('team_detail', pk=player.team.pk)
+
+    if request.method == 'POST':
+        form = PlayerForm(request.POST, request.FILES, instance=player)
+        if form.is_valid():
+            form.save()
+            return redirect('team_detail', pk=player.team.pk)
+    else:
+        form = PlayerForm(instance=player)
+
+    return render(request, 'teams/player_form.html', {'form': form, 'team': player.team, 'editing': True})
+@login_required
+def match_create(request):
+    if request.method == 'POST':
+        form = MatchForm(request.POST)
+        if form.is_valid():
+            match = form.save(commit=False)
+            match.created_by = request.user
+            match.save()
+            return redirect('match_detail', pk=match.pk)
+    else:
+        form = MatchForm()
+
+    return render(request, 'teams/match_form.html', {'form': form})
+
+
+@login_required
 def toss_update(request, pk):
     match = get_object_or_404(Match, pk=pk)
+
+    if match.created_by_id != request.user.id:
+        messages.error(request, "Only the match creator can set the toss.")
+        return redirect('match_detail', pk=match.pk)
 
     if request.method == 'POST':
         form = TossForm(request.POST, instance=match, match=match)
@@ -178,8 +323,13 @@ def toss_update(request, pk):
     return render(request, 'teams/toss_form.html', {'form': form, 'match': match})
 
 
+@login_required
 def innings_create(request, match_pk):
     match = get_object_or_404(Match, pk=match_pk)
+
+    if match.created_by_id != request.user.id:
+        messages.error(request, "Only the match creator can start an innings.")
+        return redirect('match_detail', pk=match.pk)
 
     if request.method == 'POST':
         form = InningsForm(request.POST, match=match)
@@ -201,8 +351,15 @@ def innings_create(request, match_pk):
     return render(request, 'teams/inning_form.html', {'form': form, 'match': match})
 
 
+@login_required
 def scoring(request, pk):
     innings = get_object_or_404(Innings, pk=pk)
+    match = innings.match
+
+    if match.created_by_id != request.user.id:
+        messages.error(request, "Only the match creator can update the score.")
+        return redirect('live_scoreboard', pk=match.pk)
+
     balls = innings.balls.all().order_by('-timestamp')[:10]
 
     if request.method == 'POST':
@@ -253,6 +410,8 @@ def scoring(request, pk):
         'overs_bowled': innings.overs_bowled(),
         'batting_stats': innings.batting_stats(),
         'bowling_stats': innings.bowling_stats(),
+        'partnership': innings.current_partnership(),
+        'target_info': innings.target_info(),
     }
     return render(request, 'teams/scoring.html', context)
 
@@ -295,9 +454,3 @@ def check_match_completion(innings):
 
             match.status = 'completed'
             match.save()
-
-
-def live_scoreboard(request, pk):
-    match = get_object_or_404(Match, pk=pk)
-    innings_list = match.innings.all().order_by('innings_number')
-    return render(request, 'teams/live_scoreboard.html', {'match': match, 'innings_list': innings_list})

@@ -1,20 +1,55 @@
 {% extends 'teams/base.html' %}
 {% block title %}{{ team.name }} - TKMcric{% endblock %}
 {% block content %}
-    <h1>{{ team.name }} ({{ team.short_name }})</h1>
-    {% if team.logo %}
-        <img src="{{ team.logo.url }}" alt="{{ team.name }} logo" width="120">
-    {% endif %}
-    <h2>Players</h2>
-    <a href="{% url 'player_create' team.pk %}">+ Add Player</a>
-    <ul>
-        {% for player in players %}
-            <li>
-                <a href="{% url 'player_career' player.pk %}">{{ player.name }}</a> — {{ player.get_role_display }} {% if player.jersey_number %}(#{{ player.jersey_number }}){% endif %}
-            </li>
-        {% empty %}
-            <li>No players added yet.</li>
-        {% endfor %}
-    </ul>
-    <a href="{% url 'team_list' %}">Back to Teams</a>
+<div class="team-page">
+    <div class="team-profile-side">
+        <div class="team-logo-wrap">
+            {% if team.logo %}
+                <img src="{{ team.logo.url }}" alt="{{ team.name }} logo" class="team-logo-big">
+            {% else %}
+                <div class="team-logo-placeholder">{{ team.short_name|slice:":2" }}</div>
+            {% endif %}
+        </div>
+        <h1 class="team-name-big">{{ team.name }}</h1>
+        <span class="team-short-badge">{{ team.short_name }}</span>
+        <div class="team-meta">
+            <div class="team-meta-tile">
+                <span class="stat-value">{{ players.count }}</span>
+                <span class="stat-label">Players</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="team-players-side">
+        <div class="players-header">
+            <h2 class="stats-heading">Players</h2>
+            {% if is_owner %}
+                <a href="{% url 'player_create' team.pk %}" class="add-player-btn">+ Add Player</a>
+            {% endif %}
+        </div>
+
+        <div class="player-card-list">
+            {% for player in players %}
+                <div class="player-card-3d">
+                    {% if player.profile_picture %}
+                        <img src="{{ player.profile_picture.url }}" alt="{{ player.name }}" class="player-thumb">
+                    {% else %}
+                        <div class="player-thumb-placeholder">{{ player.name|slice:":1" }}</div>
+                    {% endif %}
+                    <div class="player-card-info">
+                        <a href="{% url 'player_career' player.pk %}" class="player-card-name">{{ player.name }}</a>
+                        <span class="player-card-role">{{ player.get_role_display }}{% if player.jersey_number %} · #{{ player.jersey_number }}{% endif %}</span>
+                    </div>
+                    {% if is_owner %}
+                        <a href="{% url 'player_edit' player.pk %}" class="player-edit-link">Edit</a>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p>No players added yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<a href="{% url 'team_list' %}">Back to Teams</a>
 {% endblock %}

@@ -3,11 +3,22 @@
 {% block content %}
     <h1>All Teams</h1>
     <a href="{% url 'team_create' %}">+ Add Team</a>
+
+    <form method="GET" style="margin: 1rem 0;">
+        <input type="text" name="q" placeholder="Search by team name..." value="{{ search_query }}">
+        <button type="submit">Search</button>
+        {% if search_query %}
+            <a href="{% url 'team_list' %}" style="margin-left:0.5rem;">Clear</a>
+        {% endif %}
+    </form>
+
     <ul>
         {% for team in teams %}
-            <li><a href="{% url 'team_detail' team.pk %}">{{ team.name }} ({{ team.short_name }})</a></li>
+            <li>
+                <a href="{% url 'team_detail' team.pk %}">{{ team.name }} ({{ team.short_name }})</a>
+            </li>
         {% empty %}
-            <li>No teams yet.</li>
+            <li>No teams found.</li>
         {% endfor %}
     </ul>
 {% endblock %}

@@ -1,8 +1,8 @@
 {% extends 'teams/base.html' %}
-{% block title %}Add Player - TKMcric{% endblock %}
+{% block title %}{% if editing %}Edit Player{% else %}Add Player{% endif %} - TKMcric{% endblock %}
 {% block content %}
-    <h1>Add Player to {{ team.name }}</h1>
-    <form method="POST">
+    <h1>{% if editing %}Edit Player{% else %}Add Player to {{ team.name }}{% endif %}</h1>
+    <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Save</button>

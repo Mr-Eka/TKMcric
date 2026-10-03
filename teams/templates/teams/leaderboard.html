@@ -1,0 +1,51 @@
+{% extends 'teams/base.html' %}
+{% block title %}Leaderboard - TKMcric{% endblock %}
+{% block content %}
+<div class="icc-wrapper">
+    <div class="icc-header">
+        <div class="icc-badge">⭐</div>
+        <div class="icc-header-divider"></div>
+        <div class="icc-title-block">
+            <h1 class="icc-title">LEADER<br>BOARD</h1>
+            <p class="icc-subtitle">Player of the Tournament</p>
+        </div>
+    </div>
+
+    <div class="icc-table-wrap">
+        <table class="icc-table">
+            <thead>
+                <tr>
+                    <th class="icc-team-col">PLAYER</th>
+                    <th>RUNS</th>
+                    <th>WKTS</th>
+                    <th>PTS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in leaderboard %}
+                    <tr class="icc-row">
+                        <td class="icc-team-col">
+                            <div class="icc-team-cell">
+                                {% if row.player.profile_picture %}
+                                    <img src="{{ row.player.profile_picture.url }}" alt="{{ row.player.name }}" class="icc-flag">
+                                {% else %}
+                                    <span class="icc-flag-placeholder">{{ row.player.name|slice:":1" }}</span>
+                                {% endif %}
+                                <span class="icc-team-name">{{ row.player.name }}</span>
+                                <span class="icc-sub-team">{{ row.player.team.short_name }}</span>
+                            </div>
+                        </td>
+                        <td>{{ row.runs }}</td>
+                        <td>{{ row.wickets }}</td>
+                        <td class="icc-pts-cell">{{ row.points }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4" style="text-align:center; padding:2rem;">No stats yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="icc-footer">🏏 TKMcric</div>
+</div>
+{% endblock %}

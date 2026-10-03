@@ -2,10 +2,12 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.team_list, name='team_list'),
+    path('', views.home, name='home'),
+    path('teams/', views.team_list, name='team_list'),
     path('teams/add/', views.team_create, name='team_create'),
     path('teams/<int:pk>/', views.team_detail, name='team_detail'),
     path('teams/<int:team_pk>/players/add/', views.player_create, name='player_create'),
+    path('players/<int:pk>/edit/', views.player_edit, name='player_edit'),
     path('players/<int:pk>/career/', views.player_career, name='player_career'),
 
     path('matches/', views.match_list, name='match_list'),
@@ -17,6 +19,9 @@ urlpatterns = [
     path('matches/<int:pk>/live/', views.live_scoreboard, name='live_scoreboard'),
 
     path('standings/', views.standings, name='standings'),
+    path('leaderboard/', views.player_leaderboard, name='player_leaderboard'),
 
     path('scoring/<int:pk>/', views.scoring, name='scoring'),
+    
+    path('matches/<int:pk>/qr/', views.match_qr_code, name='match_qr_code'),
 ]

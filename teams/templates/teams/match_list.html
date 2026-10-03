@@ -3,6 +3,21 @@
 {% block content %}
     <h1>All Matches</h1>
     <a href="{% url 'match_create' %}">+ Schedule Match</a>
+
+    <form method="GET" style="margin: 1rem 0; display:flex; gap:0.7rem; flex-wrap:wrap;">
+        <input type="text" name="q" placeholder="Search by team name..." value="{{ search_query }}" style="flex:1; min-width:180px;">
+        <select name="status" style="width:auto;">
+            <option value="">All statuses</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Filter</button>
+        {% if search_query or status_filter %}
+            <a href="{% url 'match_list' %}">Clear</a>
+        {% endif %}
+    </form>
+
     <ul>
         {% for match in matches %}
             <li>
@@ -12,7 +27,7 @@
                 </a>
             </li>
         {% empty %}
-            <li>No matches scheduled yet.</li>
+            <li>No matches found.</li>
         {% endfor %}
     </ul>
 {% endblock %}

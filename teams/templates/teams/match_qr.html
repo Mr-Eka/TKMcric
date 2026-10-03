@@ -1,0 +1,33 @@
+{% extends 'teams/base.html' %}
+{% block title %}Share {{ match.team_a.short_name }} vs {{ match.team_b.short_name }} - TKMcric{% endblock %}
+{% block content %}
+<div class="share-card">
+    <h1 class="share-title">{{ match.team_a.short_name }} vs {{ match.team_b.short_name }}</h1>
+    <p class="share-subtitle">Scan to watch live</p>
+
+    <div class="qr-box">
+        <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code" class="qr-image">
+    </div>
+
+    <p class="share-url">{{ live_url }}</p>
+
+    <div class="share-buttons">
+        <button onclick="copyLink()" class="btn" id="copy-btn">📋 Copy Link</button>
+        <a href="https://wa.me/?text={{ live_url|urlencode }}" target="_blank" class="btn whatsapp-btn">💬 Share on WhatsApp</a>
+    </div>
+
+    <a href="{% url 'match_detail' match.pk %}">Back to Match</a>
+</div>
+
+<script>
+function copyLink() {
+    const url = "{{ live_url }}";
+    navigator.clipboard.writeText(url).then(() => {
+        const btn = document.getElementById('copy-btn');
+        const original = btn.textContent;
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => { btn.textContent = original; }, 2000);
+    });
+}
+</script>
+{% endblock %}

@@ -1,28 +1,79 @@
 {% extends 'teams/base.html' %}
 {% block title %}{{ player.name }} - Career Stats{% endblock %}
 {% block content %}
-    <h1>{{ player.name }} ({{ player.team.short_name }})</h1>
-    <p>Role: {{ player.get_role_display }}</p>
+<div class="profile-card profile-card-3d">
+    <div class="profile-photo-side">
+        {% if player.profile_picture %}
+            <img src="{{ player.profile_picture.url }}" alt="{{ player.name }}" class="profile-photo">
+        {% else %}
+            <div class="profile-photo-placeholder">{{ player.name|slice:":1" }}</div>
+        {% endif %}
+        <h1 class="profile-name">{{ player.name }}</h1>
+        <p class="profile-team">{{ player.team.short_name }}</p>
+        <span class="profile-role-badge">{{ player.get_role_display }}</span>
+        {% if player.jersey_number %}
+            <div class="jersey-number">#{{ player.jersey_number }}</div>
+        {% endif %}
+    </div>
 
-    <h2>🏏 Batting Career</h2>
-    <ul>
-        <li>Innings Batted: {{ innings_batted }}</li>
-        <li>Total Runs: {{ total_runs }}</li>
-        <li>Balls Faced: {{ total_balls_faced }}</li>
-        <li>Fours: {{ total_fours }} | Sixes: {{ total_sixes }}</li>
-        <li>Times Out: {{ times_out }}</li>
-        <li>Batting Average: {{ career_average }}</li>
-        <li>Strike Rate: {{ career_strike_rate }}</li>
-    </ul>
+    <div class="profile-stats-side">
+        <div class="stats-block">
+            <h2 class="stats-heading">🏏 Batting</h2>
+            <div class="stats-grid">
+                <div class="stat-tile">
+                    <span class="stat-value">{{ total_runs }}</span>
+                    <span class="stat-label">Runs</span>
+                </div>
+                <div class="stat-tile">
+                    <span class="stat-value">{{ innings_batted }}</span>
+                    <span class="stat-label">Innings</span>
+                </div>
+                <div class="stat-tile">
+                    <span class="stat-value">{{ career_average }}</span>
+                    <span class="stat-label">Average</span>
+                </div>
+                <div class="stat-tile">
+                    <span class="stat-value">{{ career_strike_rate }}</span>
+                    <span class="stat-label">Strike Rate</span>
+                </div>
+                <div class="stat-tile accent-boundary">
+                    <span class="stat-value">{{ total_fours }}</span>
+                    <span class="stat-label">Fours</span>
+                </div>
+                <div class="stat-tile accent-six">
+                    <span class="stat-value">{{ total_sixes }}</span>
+                    <span class="stat-label">Sixes</span>
+                </div>
+            </div>
+        </div>
 
-    <h2>🎯 Bowling Career</h2>
-    <ul>
-        <li>Innings Bowled: {{ innings_bowled }}</li>
-        <li>Overs Bowled: {{ overs_bowled_display }}</li>
-        <li>Runs Conceded: {{ total_runs_conceded }}</li>
-        <li>Wickets Taken: {{ total_wickets }}</li>
-        <li>Economy Rate: {{ career_economy }}</li>
-    </ul>
+        <div class="stats-block">
+            <h2 class="stats-heading">🎯 Bowling</h2>
+            <div class="stats-grid">
+                <div class="stat-tile">
+                    <span class="stat-value">{{ total_wickets }}</span>
+                    <span class="stat-label">Wickets</span>
+                </div>
+                <div class="stat-tile">
+                    <span class="stat-value">{{ innings_bowled }}</span>
+                    <span class="stat-label">Innings</span>
+                </div>
+                <div class="stat-tile">
+                    <span class="stat-value">{{ overs_bowled_display }}</span>
+                    <span class="stat-label">Overs</span>
+                </div>
+                <div class="stat-tile">
+                    <span class="stat-value">{{ total_runs_conceded }}</span>
+                    <span class="stat-label">Runs Given</span>
+                </div>
+                <div class="stat-tile accent-economy">
+                    <span class="stat-value">{{ career_economy }}</span>
+                    <span class="stat-label">Economy</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <a href="{% url 'team_detail' player.team.pk %}">Back to Team</a>
+<a href="{% url 'team_detail' player.team.pk %}">Back to Team</a>
 {% endblock %}

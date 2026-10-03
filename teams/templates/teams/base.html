@@ -4,21 +4,48 @@
 <head>
     <title>{% block title %}TKMcric{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="theme-color" content="#38bdf8">
+    <link rel="apple-touch-icon" href="{% static 'icons/icon-192.png' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <nav>
-        <a href="{% url 'team_list' %}" class="brand">🏏 TKMcric</a>
+        <a href="{% url 'home' %}" class="brand">🏏 TKMcric</a>
         <a href="{% url 'team_list' %}">Teams</a>
         <a href="{% url 'match_list' %}">Matches</a>
         <a href="{% url 'match_history' %}">History</a>
-        <a href="{% url 'standings' %}">Standings</a>
+        <a href="{% url 'standings' %}">Points table</a>
+        <a href="{% url 'player_leaderboard' %}">Leaderboard</a>
+        {% if user.is_authenticated %}
+            <span style="color:#93c5fd; margin-left:auto; padding: 0.5rem 1rem;">Hi, {{ user.username }}</span>
+            <form method="POST" action="{% url 'logout' %}" style="display:inline; margin:0;">
+                {% csrf_token %}
+                <button type="submit" style="background:none;border:none;color:#fca5a5;cursor:pointer;font:inherit;padding:0.5rem 1rem;">Logout</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}" style="margin-left:auto;">Login</a>
+            <a href="{% url 'register' %}">Register</a>
+        {% endif %}
     </nav>
 
     <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <p style="background:rgba(220,38,38,0.15); border-left:3px solid #dc2626; padding:0.8rem 1rem; border-radius:8px; color:#fca5a5; margin-bottom:1rem;">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
         {% block content %}
         {% endblock %}
     </div>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register("{% static 'service-worker.js' %}");
+        });
+    }
+    </script>
 </body>
 </html>

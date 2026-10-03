@@ -6,6 +6,15 @@
         <h1>{{ innings.batting_team.short_name }} <span class="vs">vs</span> {{ innings.bowling_team.short_name }}</h1>
         <div class="big-score">{{ total_runs }}<span class="slash">/</span>{{ total_wickets }}</div>
         <div class="overs-line">{{ overs_bowled }} overs</div>
+        {% if partnership.balls > 0 %}
+            <div class="partnership-line">🤝 Partnership: {{ partnership.runs }} runs ({{ partnership.balls }} balls)</div>
+        {% endif %}
+        {% if target_info %}
+            <div class="target-line">
+                🎯 Need {{ target_info.runs_needed }} runs in {{ target_info.overs_remaining }} overs
+                <span class="rrr-badge">RRR: {{ target_info.rrr }}</span>
+            </div>
+        {% endif %}
     </div>
 
     {% if innings.match.status == 'completed' %}
@@ -68,11 +77,7 @@
         {% for ball in balls %}
             <div class="ball-item {% if ball.is_wicket %}wicket-ball{% endif %}">
                 <span class="ball-over">{{ ball.over_number }}.{{ ball.ball_number }}</span>
-                <span class="ball-info">
-                    {{ ball.batsman.name }} — {{ ball.total_runs }} run(s)
-                    {% if ball.extra_type %}({{ ball.get_extra_type_display }}){% endif %}
-                    {% if ball.is_wicket %}<strong>OUT ({{ ball.get_wicket_type_display }})</strong>{% endif %}
-                </span>
+                <span class="ball-info">{{ ball.commentary }}</span>
             </div>
         {% endfor %}
     </div>
